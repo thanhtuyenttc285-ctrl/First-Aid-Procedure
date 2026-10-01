@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reconstruct the First-Aid Procedure</title>
+<style>
+:root{--navy:#061e2c;--panel:#10364a;--card:#f7f8fa;--yellow:#f6c744;--teal:#338c89;--white:#f8fbfd;--muted:#b9cbd5;--red:#7b3d3d;--green:#245d49}
+*{box-sizing:border-box}
+body{margin:0;background:var(--navy);color:var(--white);font-family:Arial,Helvetica,sans-serif}
+.wrap{max-width:1050px;margin:auto;padding:22px}
+.kicker{color:var(--yellow);font-size:12px;font-weight:800;letter-spacing:1.5px}
+h1{font-size:clamp(24px,4vw,38px);margin:8px 0 6px}
+.rule{height:2px;background:var(--yellow);margin:10px 0 16px}
+.sub{color:var(--muted);line-height:1.5}
+.panel{background:var(--panel);border-radius:14px;padding:22px;margin-top:20px}
+.cards{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:18px}
+.card{background:var(--card);color:#14232c;border:3px solid transparent;border-radius:10px;min-height:145px;padding:16px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer}
+.card.sel{border-color:var(--yellow)}
+.letter{font-size:13px;font-weight:800;margin-bottom:12px}
+.name{font-weight:900;font-size:14px;line-height:1.35}
+.controls,.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+button{border:0;border-radius:8px;padding:12px 16px;font-weight:800;cursor:pointer;min-height:44px}
+.move{background:#e7eef2;color:#102a38}.check{background:var(--yellow);color:#102a38}.hint{background:#e7eef2;color:#102a38}.reset{background:var(--teal);color:white}
+.msg{display:none;margin-top:16px;padding:14px;border-radius:9px;line-height:1.5}.bad{background:var(--red)}.good{background:var(--green)}
+.sequence{display:none;margin-top:20px}.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:14px}
+.step{background:#f7f8fa;color:#102a38;border-radius:9px;padding:14px;text-align:center;font-weight:800;min-height:85px}
+.step small{display:block;color:#48727f;margin-bottom:8px}
+.support{display:none;background:#163f53;padding:14px;border-radius:9px;margin-top:14px;line-height:1.65}
+@media(max-width:720px){.cards,.flow{grid-template-columns:1fr}.card{min-height:90px}.controls button,.actions button{flex:1}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="kicker">POST-READING • PROCEDURE RECONSTRUCTION</div>
+<h1>RECONSTRUCT THE FIRST-AID PROCEDURE</h1>
+<div class="rule"></div>
+<p class="sub">Close the text. Arrange the five shuffled action cards in the order presented in the reading. Select a card, then move it left or right.</p>
+
+<div class="panel">
+  <div id="cards" class="cards"></div>
+  <div class="controls">
+    <button id="left" class="move">← Move Left</button>
+    <button id="right" class="move">Move Right →</button>
+    <button id="hint" class="hint">Hint</button>
+    <button id="check" class="check">Check Order</button>
+    <button id="reset" class="reset">Reset</button>
+  </div>
+  <div id="msg" class="msg"></div>
+</div>
+
+<div id="sequence" class="panel sequence">
+  <div class="kicker">NEXT TASK • SPEAKING</div>
+  <h2>EXPLAIN THE PROCEDURE</h2>
+  <p class="sub">Use the correct sequence to explain the procedure to a partner.</p>
+  <div id="flow" class="flow"></div>
+  <p style="color:var(--yellow);text-align:center;margin-top:18px"><b>First, ... &nbsp; Next, ... &nbsp; Then, ... &nbsp; After that, ... &nbsp; Finally, ...</b></p>
+  <div class="actions"><button id="supportBtn" class="hint">Show B1 Support</button></div>
+  <div id="support" class="support"><b>B1 speaking support</b><br>
+    First, make sure that ...<br>
+    Next, check whether ...<br>
+    Then, make sure that ...<br>
+    After that, check for ...<br>
+    Finally, if ..., ...
+  </div>
+</div>
+</div>
+<script>
+const correct=["MAKE THE AREA SAFE","CHECK CASUALTY + CALL","CLEAR + OPEN AIRWAY","CHECK BREATHING","PULSE + FIRST AID"];
+const letters={ "CHECK BREATHING":"A","MAKE THE AREA SAFE":"B","PULSE + FIRST AID":"C","CLEAR + OPEN AIRWAY":"D","CHECK CASUALTY + CALL":"E" };
+const initial=["CHECK BREATHING","MAKE THE AREA SAFE","PULSE + FIRST AID","CLEAR + OPEN AIRWAY","CHECK CASUALTY + CALL"];
+let items=[...initial], selected=0, attempts=1;
+const cards=document.getElementById("cards"), msg=document.getElementById("msg");
+function render(){
+ cards.innerHTML="";
+ items.forEach((name,i)=>{
+  const d=document.createElement("button"); d.className="card"+(i===selected?" sel":"");
+  d.innerHTML=`<span class="letter">${letters[name]}</span><span class="name">${name}</span>`;
+  d.onclick=()=>{selected=i;render()}; cards.appendChild(d);
+ });
+}
+function move(delta){
+ const j=selected+delta;if(j<0||j>=items.length)return;
+ [items[selected],items[j]]=[items[j],items[selected]];selected=j;render();
+}
+document.getElementById("left").onclick=()=>move(-1);
+document.getElementById("right").onclick=()=>move(1);
+document.getElementById("hint").onclick=()=>{
+ msg.className="msg good";msg.style.display="block";
+ msg.innerHTML="<b>Hint:</b> Safety comes first. Before checking the casualty, what must the rescuer do about the electrical danger?";
+};
+document.getElementById("check").onclick=()=>{
+ const ok=items.every((x,i)=>x===correct[i]);msg.style.display="block";
+ if(ok){
+  msg.className="msg good";msg.innerHTML="<b>Correct!</b> You reconstructed the five-step sequence. Now explain it to a partner.";
+  showSpeaking();
+ } else {
+  msg.className="msg bad";
+  msg.innerHTML=attempts===1?"<b>Try again.</b> Step 1 is about making the area safe. Reconsider what happens after the electrical danger is controlled.":"<b>Check the sequence again.</b> Return to the reading only if you need evidence.";
+  attempts++;
+ }
+};
+document.getElementById("reset").onclick=()=>{
+ items=[...initial];selected=0;attempts=1;msg.style.display="none";document.getElementById("sequence").style.display="none";render();
+};
+function showSpeaking(){
+ const flow=document.getElementById("flow");flow.innerHTML="";
+ correct.forEach((x,i)=>{const d=document.createElement("div");d.className="step";d.innerHTML=`<small>STEP ${i+1}</small>${x}`;flow.appendChild(d)});
+ document.getElementById("sequence").style.display="block";
+}
+document.getElementById("supportBtn").onclick=()=>{
+ const s=document.getElementById("support"),b=document.getElementById("supportBtn");
+ const open=s.style.display==="block";s.style.display=open?"none":"block";b.textContent=open?"Show B1 Support":"Hide B1 Support";
+};
+render();
+</script>
+</body>
+</html>
